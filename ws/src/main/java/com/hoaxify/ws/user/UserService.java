@@ -20,13 +20,14 @@ public class UserService {
 	
 	FileService fileService;
 
-	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, FileService fileService) {
+	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, 
+			FileService fileService) {
 		super();
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.fileService = fileService;
 	}
-
+	
 	public void save(User user) {
 		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
 		userRepository.save(user);
@@ -58,12 +59,18 @@ public class UserService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			fileService.deleteFile(oldImageName);
+			fileService.deleteProfileImage(oldImageName);
 		} else {
 			String oldImageName = inDB.getImage();
-			fileService.deleteFile(oldImageName);
+			fileService.deleteProfileImage(oldImageName);
 			inDB.setImage(null);
 		}
 		return userRepository.save(inDB);
+	}
+
+	public void deleteUser(String username) {
+		User inDB = userRepository.findByUsername(username);
+		fileService.deleteAllStoredFilesForUser(inDB);
+		userRepository.delete(inDB);
 	}
 }
